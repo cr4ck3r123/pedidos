@@ -366,6 +366,50 @@
         document.querySelector("#checkout-total").textContent = currency.format(totals.totalCents / 100);
     }
 
+    function formatPhone(value) {
+        const digits = value.replace(/\D/g, "").slice(0, 13);
+        if (digits.length <= 2) return digits;
+
+        const hasCountryCode = digits.startsWith("55") && digits.length > 11;
+        const areaCode = hasCountryCode ? digits.slice(2, 4) : digits.slice(0, 2);
+        const number = hasCountryCode ? digits.slice(4) : digits.slice(2);
+        const prefix = hasCountryCode ? `+55 (${areaCode}) ` : `(${areaCode}) `;
+        const separatorAt = number.length > 8 ? 5 : 4;
+
+        if (number.length <= separatorAt) return prefix + number;
+        return `${prefix}${number.slice(0, separatorAt)}-${number.slice(separatorAt)}`;
+    }
+
+    function formatCpf(value) {
+        const digits = value.replace(/\D/g, "").slice(0, 11);
+        if (digits.length <= 3) return digits;
+        if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+        if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+        return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+    }
+
+    function applyInputMask(input, formatter) {
+        const formatInput = () => {
+            const selectionStart = input.selectionStart ?? input.value.length;
+            const digitsBeforeCursor = input.value.slice(0, selectionStart).replace(/\D/g, "").length;
+            input.value = formatter(input.value);
+
+            let cursorPosition = 0;
+            let digitsSeen = 0;
+            while (cursorPosition < input.value.length && digitsSeen < digitsBeforeCursor) {
+                if (/\d/.test(input.value[cursorPosition])) digitsSeen += 1;
+                cursorPosition += 1;
+            }
+            if (document.activeElement === input) {
+                input.setSelectionRange(cursorPosition, cursorPosition);
+            }
+        };
+
+        input.addEventListener("input", formatInput);
+        input.addEventListener("change", formatInput);
+        input.addEventListener("blur", formatInput);
+    }
+
     async function submitOrder(event) {
         event.preventDefault();
         elements.formError.hidden = true;
@@ -379,7 +423,7 @@
         pendingWhatsappWindow = onlinePayment ? null : window.open("about:blank", "_blank");
         const payload = {
             customer_name: formData.get("customer_name").trim(),
-            customer_phone: formData.get("customer_phone").trim(),
+            customer_phone: formData.get("customer_phone").replace(/\D/g, ""),
             fulfillment: formData.get("fulfillment"),
             address: formData.get("address").trim(),
             complement: formData.get("complement").trim(),
@@ -393,7 +437,7 @@
         try {
             if (onlinePayment) {
                 payload.customer_email = formData.get("customer_email").trim();
-                payload.customer_cpf = formData.get("customer_cpf").trim();
+                payload.customer_cpf = formData.get("customer_cpf").replace(/\D/g, "");
             }
             const response = await fetch("api/orders.php", {
                 method: "POST",
@@ -539,6 +583,8 @@
         if (!elements.productModal.hidden) closeProductModal();
         else if (!elements.modal.hidden) closeCheckout();
     });
+    applyInputMask(elements.form.elements.customer_phone, formatPhone);
+    applyInputMask(elements.form.elements.customer_cpf, formatCpf);
     elements.form.addEventListener("change", updateConditionalFields);
     elements.form.addEventListener("submit", submitOrder);
     loadMenu();

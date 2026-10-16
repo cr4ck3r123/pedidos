@@ -125,10 +125,10 @@
             <p class="modal-copy">Preencha seus dados para enviar o pedido direto para a loja.</p>
             <form id="checkout-form">
                 <label class="field-label">Seu nome<input name="customer_name" required maxlength="100" autocomplete="name" placeholder="Como podemos te chamar?"></label>
-                <label class="field-label">Seu WhatsApp<input name="customer_phone" required type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(11) 99999-9999"></label>
+                <label class="field-label">Seu WhatsApp<input name="customer_phone" required type="tel" inputmode="tel" autocomplete="tel" maxlength="19" placeholder="(11) 99999-9999"></label>
                 <div id="online-customer-fields" hidden>
                     <label class="field-label">E-mail<input name="customer_email" type="email" maxlength="254" autocomplete="email" placeholder="voce@exemplo.com"></label>
-                    <label class="field-label">CPF<input name="customer_cpf" inputmode="numeric" maxlength="20" autocomplete="off" placeholder="Somente para processar o pagamento"></label>
+                    <label class="field-label">CPF<input name="customer_cpf" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00"></label>
                 </div>
                 <fieldset class="choice-field">
                     <legend>Como prefere receber?</legend>
@@ -170,6 +170,6 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="qrcode-generator.min.js" defer></script>
     <script src="pix-qr.js" defer></script>
-    <script src="app.js" defer></script>
+    <script src="app.js?v=20261016-1" defer></script>
 </body>
 </html>
